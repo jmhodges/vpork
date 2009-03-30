@@ -1,3 +1,6 @@
+workDir = '/tmp/vpork'
+voldemortHome = '/Users/jtravis/dev/project-voldemort'
+
 name = "3-node-light"
 
 storeFactory {
@@ -22,3 +25,18 @@ readFactor = {x -> (1.0 - x) ** 20.0}
 readLog  = "read.log"
 writeLog = "write.log"
 
+partitions        = 100
+replicationFactor = 1
+requiredReads     = 1
+requiredWrites    = 1
+
+serverProps {
+    max.threads   = 100
+    http.enable   = true
+    socket.enable = true
+
+    bdb {
+        sync.transactions = false
+        cache.size = '100MB'
+    }
+}

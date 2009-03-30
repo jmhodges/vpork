@@ -1,6 +1,4 @@
 package vpork
-/**
- */
 
 class StatFile {
     Writer w

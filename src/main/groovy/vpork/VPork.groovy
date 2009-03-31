@@ -42,15 +42,17 @@ class VPork {
     private StatFile   readLog
     private StatFile   readDistLog
     private File       logDir
+    private File       voldConfigDir
     private Writer     progressLog
 
     private Closure    readFactor
     private def cfg
     private byte[] bytes
 
-    VPork(cfg, List<String> nodes) {
-        this.cfg   = cfg
-        this.nodes = nodes
+    VPork(cfg, List<String> nodes, File voldConfigDir) {
+        this.cfg           = cfg
+        this.nodes         = nodes
+        this.voldConfigDir = voldConfigDir
     }
 
     long now(){
@@ -108,6 +110,11 @@ class VPork {
         logAndPrint "RewriteOdds     : ${cfg.rewriteOdds}"
         logAndPrint "Data Size       : ${cfg.dataSize} B"
         logAndPrint "BoostrapURLs    : ${bootstrap.join(',')}"
+
+        logAndPrint "Snapshotting voldemort config from ${voldConfigDir.absolutePath}"
+        new AntBuilder().copy(toDir: logDir) {
+            fileset(dir: new File(voldConfigDir, "config"))
+        }
     }
 
     private void logAndPrint(String s) {
@@ -189,6 +196,8 @@ class VPork {
     }
 
     void execute() {
+        logAndPrint "Giddyup boy!  "
+
         def statThread = Thread.startDaemon {
             double expectedWrites = cfg.numThreads * cfg.threadIters * cfg.writeOdds * cfg.dataSize
             while(true) {
@@ -261,7 +270,7 @@ class VPork {
         }
 
         List<String> nodes = nodesFile.readLines()
-        VPork vp = new VPork(cfg, nodes)
+        VPork vp = new VPork(cfg, nodes, voldCfgDir)
         vp.setup()
         vp.execute()
     }

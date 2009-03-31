@@ -203,7 +203,7 @@ class VPork {
         // Fire a test shot to see if we can even operate
         logAndPrint "Testing if our store even works ..."
         StoreClient c = storeFact.getStoreClient("bytez")
-        c.put("test_${System.currentTimeMillis()}", new byte[1])
+        c.put("test_${System.currentTimeMillis()}" as String, new byte[1])
         logAndPrint "Giddyup boy!  "
 
         AtomicBoolean shuttingDown = new AtomicBoolean(false)

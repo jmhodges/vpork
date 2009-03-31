@@ -111,8 +111,11 @@ class VPork {
         logAndPrint "Data Size       : ${cfg.dataSize} B"
         logAndPrint "BoostrapURLs    : ${bootstrap.join(',')}"
 
-        logAndPrint "Snapshotting voldemort config from ${voldConfigDir.absolutePath}"
-        new AntBuilder().copy(toDir: logDir) {
+        File cfgSnapDir = new File(logDir, voldConfigDir.name)
+        cfgSnapDir.mkdirs()
+        logAndPrint "Snapshotting voldemort config from ${voldConfigDir.absolutePath} to ${cfgSnapDir}"
+
+        new AntBuilder().copy(toDir: cfgSnapDir) {
             fileset(dir: new File(voldConfigDir, "config"))
         }
     }
@@ -221,7 +224,7 @@ class VPork {
                 }
             }
         }
-        ([statThread] + threads)*.join()
+        threads*.join()
         porkEnd = now()
         readLog.close()
         writeLog.close()

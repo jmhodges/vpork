@@ -22,6 +22,7 @@ import voldemort.client.StoreClientFactory
 import voldemort.client.SocketStoreClientFactory
 import java.util.concurrent.atomic.AtomicLong
 import java.text.DateFormat
+import java.util.concurrent.atomic.AtomicBoolean
 
 class VPork {
     private StoreClientFactory storeFact
@@ -199,18 +200,26 @@ class VPork {
     }
 
     void execute() {
+        // Fire a test shot to see if we can even operate
+        logAndPrint "Testing if our store even works ..."
+        StoreClient c = storeFact.getStoreClient("bytez")
+        c.put("test_${System.currentTimeMillis()}", new byte[1])
         logAndPrint "Giddyup boy!  "
 
-        def statThread = Thread.startDaemon {
+        AtomicBoolean shuttingDown = new AtomicBoolean(false)
+        Thread.startDaemon {
             double expectedWrites = cfg.numThreads * cfg.threadIters * cfg.writeOdds * cfg.dataSize
             while(true) {
                 Thread.sleep(5 * 1000)
+                if (shuttingDown.get()) {
+                    return
+                }
                 def percDone = (double)bytesWritten.get() * 100.0 / expectedWrites
                 double readGB = (double)bytesRead / (1024 * 1024 * 1024)
                 double writeGB = (double)bytesWritten / (1024 * 1024 * 1024)
                 logAndPrint sprintf("%%%.2f   num=${numRecords} rGB=%.2f wGB=%.2f rFail=%s wFail=%s notFound=%s",
                                     percDone, readGB, writeGB, readFails, writeFails, readsNotFound)
-            }                                                                                   
+            }
         }
 
         porkStart = now()
@@ -225,6 +234,7 @@ class VPork {
             }
         }
         threads*.join()
+        shuttingDown.set(true)
         porkEnd = now()
         readLog.close()
         writeLog.close()

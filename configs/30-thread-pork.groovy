@@ -8,7 +8,7 @@ storeFactory {
     maxThreads        = 30
     maxQueuedRequests = 100
     maxConnsPerNode   = 30
-    maxTotalConns     = 30
+    maxTotalConns     = 500
     storePort         = 6666
 }
 

@@ -35,6 +35,8 @@ class VPork {
     private AtomicLong readsNotFound = new AtomicLong(0)
     private AtomicLong writeFails    = new AtomicLong(0)
     private AtomicLong readFails     = new AtomicLong(0)
+    private AtomicLong timeWriting   = new AtomicLong(0)
+    private AtomicLong timeReading   = new AtomicLong(0)
     private long       porkStart
     private long       porkEnd
     private StatList   writeTimes   = new StatList()
@@ -184,6 +186,7 @@ class VPork {
         } else {
             bytesRead.addAndGet(val.value.size())
             readTimes << time
+            timeReading.addAndGet(time)
             readLog.log(maxTime, time)
         }
     }
@@ -196,6 +199,7 @@ class VPork {
         bytesWritten.addAndGet(bytes.size())
         long time = now() - start
         writeTimes << time
+        timeWriting.addAndGet(time)
         writeLog.log(numRecs, time)         
     }
 
@@ -253,18 +257,20 @@ class VPork {
         logAndPrint sprintf("  Num Writes:           ${numWrites}")
         logAndPrint sprintf("  Write Failures:       %s", writeFails)
         logAndPrint sprintf("  Write Latency:        %.2f ms", writeTimes.average)
-        logAndPrint sprintf("  Write Latency (99):   %.2f ms", writeTimes.getPercentile(0.99))
+        logAndPrint sprintf("  Write Latency (%%99):  %.2f ms", writeTimes.getPercentile(0.99))
         logAndPrint sprintf("  Bytes Written:        %.2f MB", bytesWritten / (1024 * 1024))
-        logAndPrint sprintf("  Write Throughput:     %.2f KB / ms", (double)(bytesWritten / 1024.0) / (double)elapsed)
+        logAndPrint sprintf("  Thread w/Throughput:  %.2f KB / ms", (double)(bytesWritten / 1024.0) / (double)timeWriting.get())
+        logAndPrint sprintf("  Total w/Throughput:   %.2f KB / ms", (double)(bytesWritten / 1024.0) / (double)elapsed)
         logAndPrint ""
         logAndPrint sprintf("Reads:")
         logAndPrint sprintf("  Num Read:             ${numReads}")
         logAndPrint sprintf("  Read Failures:        %s", readFails)
         logAndPrint sprintf("  Read Latency:         %.2f ms", readTimes.average)
-        logAndPrint sprintf("  Read Latency (99):    %.2f ms", readTimes.getPercentile(0.99))
+        logAndPrint sprintf("  Read Latency (%%99):   %.2f ms", readTimes.getPercentile(0.99))
         logAndPrint sprintf("  Read Not Found:       %s (%%%.2f)", readsNotFound, (double)readsNotFound * 100.0 / (double)numReads)
         logAndPrint sprintf("  Bytes Read:           %.2f MB", bytesRead / (1024 * 1024))
-        logAndPrint sprintf("  Read Throughput:      %.2f KB / ms", (double)(bytesRead / 1024.0) / (double)elapsed)
+        logAndPrint sprintf("  Thread r/Throughput:  %.2f KB / ms", (double)(bytesRead / 1024.0) / (double)timeReading.get())
+        logAndPrint sprintf("  Total r/Throughput:   %.2f KB / ms", (double)(bytesRead / 1024.0) / (double)elapsed)        
     }
 
     static void main(String[] args) {

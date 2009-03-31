@@ -14,6 +14,13 @@ class StatFile {
         }
     }
 
+    void log(double x) {
+        String s = x + "\n"
+        synchronized (w) {
+            w.write(s)
+        }
+    }
+
     void close() {
         w.flush()
         w.close()

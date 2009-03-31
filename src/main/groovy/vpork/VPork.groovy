@@ -4,8 +4,13 @@ import voldemort.client.StoreClient
 import voldemort.client.StoreClientFactory
 import voldemort.client.SocketStoreClientFactory
 import java.util.concurrent.atomic.AtomicLong
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
 
 class VPork {
+
+    private Log log = LogFactory.getLog(VPork)
+
     private StoreClientFactory storeFact
     private AtomicLong numRecords    = new AtomicLong(0)
     private AtomicLong numWrites     = new AtomicLong(0)
@@ -21,6 +26,7 @@ class VPork {
     private StatList   readTimes    = new StatList()
     private StatFile   writeLog
     private StatFile   readLog
+    private StatFile   readDistLog
 
     private Closure    readFactor
     private def cfg
@@ -46,10 +52,11 @@ class VPork {
                                                  cfg.storeFactory.maxTotalConns,
                                                  cfg.bootstrapUrl as String[])
 
-        readFactor = cfg.readFactor
-        bytes      = new byte[cfg.dataSize]
-        readLog    = new StatFile(cfg.readLog as File)
-        writeLog   = new StatFile(cfg.writeLog as File)        
+        readFactor  = cfg.readFactor
+        bytes       = new byte[cfg.dataSize]
+        readLog     = new StatFile(cfg.readLog as File)
+        writeLog    = new StatFile(cfg.writeLog as File)
+        readDistLog = new StatFile(cfg.readDistLog as File)
 
         println "NumThreads      : ${cfg.numThreads}"
         println "Iters / Thread  : ${cfg.threadIters}"
@@ -83,13 +90,29 @@ class VPork {
         }
     }
 
+    /**
+     * Read from the data store.  We attempt to read values from some
+     * time in the past (numRecords is our 'clock').
+     *
+     * No attempt will be made to read the most recent 'numThreads * 2'
+     * records, as it is possible that recent records have not fully been
+     * written.
+     */
     void storeRead(StoreClient c, Random r) {
-        long curTime = numRecords.get() - 1
-        long recordsAgo = readFactor(r.nextDouble()) * (double)curTime
+        long timeOffset = 2 * cfg.numThreads
+        long curTime = numRecords.get()
+        long maxTime = curTime - timeOffset
+        if (maxTime < 0) {
+            // Haven't collected the minimum records yet.
+            return
+        }
 
+        long recordsAgo = readFactor(r.nextDouble()) * (double)maxTime
+        readDistLog.log(recordsAgo)
         // We invert here, because we are more likely to read the most recent
         // record (not the furthest ago)
-        long readRec = curTime - recordsAgo
+        long readRec = maxTime - recordsAgo
+        //println readRec
         String key = "r_${readRec}"
         //println "$recordsAgo $readRec"
         long start = now()
@@ -100,7 +123,7 @@ class VPork {
         } else {
             bytesRead.addAndGet(val.value.size())
             readTimes << time
-            readLog.log(curTime, time)
+            readLog.log(maxTime, time)
         }
     }
 
@@ -116,6 +139,18 @@ class VPork {
     }
 
     void execute() {
+        Thread.startDaemon {
+            double expectedWrites = cfg.numThreads * cfg.threadIters * cfg.writeOdds * cfg.dataSize
+            while(true) {
+                Thread.sleep(5 * 1000)
+                def percDone = (double)bytesWritten.get() * 100.0 / expectedWrites
+                double readGB = (double)bytesRead / (1024 * 1024 * 1024)
+                double writeGB = (double)bytesWritten / (1024 * 1024 * 1024)
+                log.info sprintf("%%%.2f   num=${numRecords} rGB=%.2f wGB=%.2f rFail=%s wFail=%s notFound=%s rThrough, wThrough",
+                                 percDone, readGB, writeGB, readFails, writeFails, readsNotFound)
+            }                                                                                   
+        }
+
         porkStart = now()
         def threads = (0..<cfg.numThreads).collect { threadNo ->
             Thread.start {
@@ -131,6 +166,7 @@ class VPork {
         porkEnd = now()
         readLog.close()
         writeLog.close()
+        readDistLog.close()
         printStats()
     }
 
@@ -143,7 +179,7 @@ class VPork {
         printf "  Num Writes:           ${numWrites}\n"
         printf "  Write Failures:       %s\n", writeFails
         printf "  Write Latency:        %.2f ms\n", writeTimes.average
-        printf "  Write Latency (99.9): %.2f ms\n", writeTimes.getPercentile(0.999)
+        printf "  Write Latency (99):   %.2f ms\n", writeTimes.getPercentile(0.99)
         printf "  Bytes Written:        %.2f MB\n", bytesWritten / (1024 * 1024)
         printf "  Write Throughput:     %.2f KB / ms\n", (double)(bytesWritten / 1024.0) / (double)elapsed        
         printf "\n"
@@ -151,7 +187,7 @@ class VPork {
         printf "  Num Read:             ${numReads}\n"
         printf "  Read Failures:        %s\n", readFails
         printf "  Read Latency:         %.2f ms\n", readTimes.average
-        printf "  Read Latency (99.9):  %.2f ms\n", readTimes.getPercentile(0.999)
+        printf "  Read Latency (99):    %.2f ms\n", readTimes.getPercentile(0.99)
         printf "  Read Not Found:       %s (%%%.2f)\n", readsNotFound, (double)readsNotFound * 100.0 / (double)numReads
         printf "  Bytes Read:           %.2f MB\n", bytesRead / (1024 * 1024)
         printf "  Read Throughput:      %.2f KB / ms\n", (double)(bytesRead / 1024.0) / (double)elapsed

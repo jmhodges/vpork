@@ -94,12 +94,12 @@ class VPork {
      * Read from the data store.  We attempt to read values from some
      * time in the past (numRecords is our 'clock').
      *
-     * No attempt will be made to read the most recent 'numThreads * 2'
-     * records, as it is possible that recent records have not fully been
-     * written.
+     * No attempt will be made to read the most recent 'numThreads * 3'
+     * records, as it is possible that recent records have not been written to
+     * storage, even though numRecords has been incremented.
      */
     void storeRead(StoreClient c, Random r) {
-        long timeOffset = 2 * cfg.numThreads
+        long timeOffset = 3 * cfg.numThreads
         long curTime = numRecords.get()
         long maxTime = curTime - timeOffset
         if (maxTime < 0) {
@@ -146,7 +146,7 @@ class VPork {
                 def percDone = (double)bytesWritten.get() * 100.0 / expectedWrites
                 double readGB = (double)bytesRead / (1024 * 1024 * 1024)
                 double writeGB = (double)bytesWritten / (1024 * 1024 * 1024)
-                log.info sprintf("%%%.2f   num=${numRecords} rGB=%.2f wGB=%.2f rFail=%s wFail=%s notFound=%s rThrough, wThrough",
+                log.info sprintf("%%%.2f   num=${numRecords} rGB=%.2f wGB=%.2f rFail=%s wFail=%s notFound=%s",
                                  percDone, readGB, writeGB, readFails, writeFails, readsNotFound)
             }                                                                                   
         }

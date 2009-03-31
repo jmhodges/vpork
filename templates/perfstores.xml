@@ -1,0 +1,42 @@
+<!--
+This file is a template for the Voldemort stores.xml configuration
+file.  You should copy this into your voldemort config directory and
+make modifications for replication, etc.
+-->
+
+<stores>
+  <store>
+    <name>test</name>
+    <persistence>bdb</persistence>
+    <routing>client</routing>
+    <replication-factor>1</replication-factor>
+    <required-reads>1</required-reads>
+    <required-writes>1</required-writes>
+    <key-serializer>
+      <type>json</type>
+      <schema-info>"string"</schema-info>
+    </key-serializer>
+    <value-serializer>
+      <type>json</type>
+      <schema-info>"string"</schema-info>
+    </value-serializer>
+  </store>
+
+  <!-- Bytes is the actual store where data is read / written -->
+  <store>
+    <name>bytez</name>
+    <persistence>bdb</persistence>
+    <routing>client</routing>
+    <replication-factor>1</replication-factor>
+    <required-reads>1</required-reads>
+    <required-writes>1</required-writes>
+    <key-serializer>
+      <type>json</type>
+      <schema-info>"string"</schema-info>
+    </key-serializer>
+    <value-serializer>
+      <type>json</type>
+      <schema-info>"bytes"</schema-info>
+    </value-serializer>
+  </store>
+</stores>

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * @author Jon Travis (jtravis@p00p.org)
+ * @author Jon Travis (jon.travis@hyperic.com)
  */
 package vpork
 
@@ -21,14 +21,11 @@ import voldemort.client.StoreClient
 import voldemort.client.StoreClientFactory
 import voldemort.client.SocketStoreClientFactory
 import java.util.concurrent.atomic.AtomicLong
-import org.apache.commons.logging.Log
-import org.apache.commons.logging.LogFactory
+import java.text.DateFormat
 
 class VPork {
-
-    private Log log = LogFactory.getLog(VPork)
-
     private StoreClientFactory storeFact
+    private List<String> nodes
     private AtomicLong numRecords    = new AtomicLong(0)
     private AtomicLong numWrites     = new AtomicLong(0)
     private AtomicLong numReads      = new AtomicLong(0)
@@ -44,45 +41,83 @@ class VPork {
     private StatFile   writeLog
     private StatFile   readLog
     private StatFile   readDistLog
+    private File       logDir
+    private Writer     progressLog
 
     private Closure    readFactor
     private def cfg
     private byte[] bytes
 
-    VPork(cfg) {
-        this.cfg = cfg
+    VPork(cfg, List<String> nodes) {
+        this.cfg   = cfg
+        this.nodes = nodes
     }
 
     long now(){
         System.currentTimeMillis()
     }
-    
+
+    private String[] generateBootstrapUrls(List<String> hosts, int serverPort) {
+        hosts.collect { "tcp://${it}:${serverPort}"} as String[]
+    }
+
+    private File makeLogDir() {
+        File res = cfg.logDir ?: 'results' as File
+
+        int i=0
+        while(true) {
+            File subDir = new File(res, "${cfg.testName}-${i++}")
+            if (!subDir.exists()) {
+                if (subDir.mkdirs() == false) {
+                    println "Error creating ${subDir.absolutePath}"
+                    return null
+                }
+                return subDir
+            }
+        }
+    }
+
     /**
      * Setup our thread pools, get a store client, prepare everything
      * to run.
      */
     void setup() {
+        String[] bootstrap = generateBootstrapUrls(nodes, cfg.storePort ?: 6666)
         storeFact = new SocketStoreClientFactory(cfg.storeFactory.coreThreads,
                                                  cfg.storeFactory.maxThreads,
                                                  cfg.storeFactory.maxQueuedRequests,
                                                  cfg.storeFactory.maxConnsPerNode,
                                                  cfg.storeFactory.maxTotalConns,
-                                                 cfg.bootstrapUrl as String[])
+                                                 bootstrap)
+
+
+        logDir  = makeLogDir()
+        println "Writing results to: ${logDir.absolutePath}"
 
         readFactor  = cfg.readFactor
         bytes       = new byte[cfg.dataSize]
-        readLog     = new StatFile(cfg.readLog as File)
-        writeLog    = new StatFile(cfg.writeLog as File)
-        readDistLog = new StatFile(cfg.readDistLog as File)
+        readLog     = new StatFile(new File(logDir, "read.log"))
+        writeLog    = new StatFile(new File(logDir, "write.log"))
+        readDistLog = new StatFile(new File(logDir, "read_dist.log"))
+        progressLog = new FileWriter(new File(logDir, "progress.log"))
 
-        println "NumThreads      : ${cfg.numThreads}"
-        println "Iters / Thread  : ${cfg.threadIters}"
-        println "ReadOdds        : ${cfg.readOdds}"
-        println "WriteOdds       : ${cfg.writeOdds}"
-        println "RewriteOdds     : ${cfg.rewriteOdds}"
-        println "Data Size       : ${cfg.dataSize} B"
-        println "Write Times     : ${cfg.writeLog}"
-        println "Read Times      : ${cfg.readLog}"                
+        logAndPrint "NumThreads      : ${cfg.numThreads}"
+        logAndPrint "Iters / Thread  : ${cfg.threadIters}"
+        logAndPrint "ReadOdds        : ${cfg.readOdds}"
+        logAndPrint "WriteOdds       : ${cfg.writeOdds}"
+        logAndPrint "RewriteOdds     : ${cfg.rewriteOdds}"
+        logAndPrint "Data Size       : ${cfg.dataSize} B"
+        logAndPrint "BoostrapURLs    : ${bootstrap.join(',')}"
+    }
+
+    private void logAndPrint(String s) {
+        DateFormat fmt = DateFormat.getDateTimeInstance()
+        s = "${fmt.format(new Date())} - ${s}\n"
+        synchronized (progressLog) {
+            progressLog.write(s)
+            progressLog.flush()
+        }
+        print s
     }
 
     void executeIter(StoreClient c, Random r) {
@@ -154,15 +189,15 @@ class VPork {
     }
 
     void execute() {
-        Thread.startDaemon {
+        def statThread = Thread.startDaemon {
             double expectedWrites = cfg.numThreads * cfg.threadIters * cfg.writeOdds * cfg.dataSize
             while(true) {
                 Thread.sleep(5 * 1000)
                 def percDone = (double)bytesWritten.get() * 100.0 / expectedWrites
                 double readGB = (double)bytesRead / (1024 * 1024 * 1024)
                 double writeGB = (double)bytesWritten / (1024 * 1024 * 1024)
-                log.info sprintf("%%%.2f   num=${numRecords} rGB=%.2f wGB=%.2f rFail=%s wFail=%s notFound=%s",
-                                 percDone, readGB, writeGB, readFails, writeFails, readsNotFound)
+                logAndPrint sprintf("%%%.2f   num=${numRecords} rGB=%.2f wGB=%.2f rFail=%s wFail=%s notFound=%s",
+                                    percDone, readGB, writeGB, readFails, writeFails, readsNotFound)
             }                                                                                   
         }
 
@@ -177,11 +212,12 @@ class VPork {
                 }
             }
         }
-        threads*.join()
+        ([statThread] + threads)*.join()
         porkEnd = now()
         readLog.close()
         writeLog.close()
         readDistLog.close()
+        progressLog.close()
         printStats()
     }
 
@@ -209,9 +245,23 @@ class VPork {
     }
 
     static void main(String[] args) {
-        def cfg = new ConfigSlurper().parse(new File(args[0]).toURL())
+        if (args.length != 2) {
+            println "Syntax:  vpork <vporkConfig.groovy> <voldemortConfigDir>"
+            return
+        }
 
-        VPork vp = new VPork(cfg)
+        def cfg = new ConfigSlurper().parse(new File(args[0]).toURL())
+        File voldCfgDir = args[1] as File
+        println "Looking in ${args[1]} for config/nodes.xml"
+        File nodesFile = new File(new File(voldCfgDir, "config"), "nodes")
+
+        if (!nodesFile.isFile()) {
+            println "Unable to read nodes file: ${nodesFile.absolutePath}"
+            return
+        }
+
+        List<String> nodes = nodesFile.readLines()
+        VPork vp = new VPork(cfg, nodes)
         vp.setup()
         vp.execute()
     }

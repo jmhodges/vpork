@@ -1,3 +1,5 @@
+testName="30-thread-pork"
+
 /**
  * Configuration of the Voldemort ClientStore.
  */
@@ -7,12 +9,8 @@ storeFactory {
     maxQueuedRequests = 100
     maxConnsPerNode   = 30
     maxTotalConns     = 30
+    storePort         = 6666
 }
-
-/**
- * Where do we bootstrap from?
- */
-bootstrapUrl = ["tcp://voldhost:6666"]
 
 // # of client threads to start
 numThreads  = 30
@@ -33,12 +31,3 @@ dataSize    = (8 + 4) * 2000
 // with a long tail, since we do most of our reads at current-time, and
 // not many in the recent past.
 readFactor = {x -> (1.0 - x) ** 10.0}
-
-// Where to write read activity (x=recNo, y=ms to read)
-readLog     = "read.log"
-
-// Where to store read distribution  (x=current time, y=distance from current time)
-readDistLog = "readDist.log"
-
-// Where to write write
-writeLog    = "write.log"

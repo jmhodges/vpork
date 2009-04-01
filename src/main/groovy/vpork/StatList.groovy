@@ -16,6 +16,10 @@ class StatList {
     }
 
     double getPercentile(double p) {
+        if (!vals) {
+            return Double.NaN
+        }
+        
         List vList = vals.sort()
         int idx = p * (double)vList.size()
         vList[idx]

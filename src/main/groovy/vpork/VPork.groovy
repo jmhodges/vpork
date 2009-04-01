@@ -140,7 +140,7 @@ class VPork {
                 storeWrite(c, r)
             } catch(Exception e) {
                 // e.printStackTrace()
-                readFails.incrementAndGet()
+                writeFails.incrementAndGet()
             }
         }
 
@@ -150,7 +150,7 @@ class VPork {
                 storeRead(c, r)
             } catch(Exception e) {
                 // e.printStackTrace()
-                writeFails.incrementAndGet()
+                readFails.incrementAndGet()
             }
         }
     }

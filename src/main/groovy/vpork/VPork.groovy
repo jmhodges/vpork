@@ -20,16 +20,17 @@ package vpork
 import vpork.voldemort.Voldemort
 //import vpork.cassandra.Cassandra
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 class VPork {
     
     private def cfg
-    
-    private Voldemort voldemort
+    private def storage //the system we're testing
     private StatsLogger logger
 
-    VPork(cfg, Voldemort voldemort, StatsLogger logger) {
+    VPork(cfg, storage, StatsLogger logger) {
         this.cfg = cfg
-        this.voldemort = voldemort
+        this.storage = storage
         this.logger = logger
     }
 
@@ -39,11 +40,41 @@ class VPork {
      */
     void setup() {       
         logger.setup()
-        voldemort.setup()
+        storage.setup()
     }
     
     void execute() {
-        voldemort.execute()
+        new Porker(storage.createClient(), cfg, logger).testSetup()
+        
+        AtomicBoolean shuttingDown = new AtomicBoolean(false)
+        Thread.startDaemon {
+            double expectedWrites = cfg.numThreads * cfg.threadIters * cfg.writeOdds * cfg.dataSize
+            while(!shuttingDown.get()) {
+                def percDone = (double) logger.bytesWritten.get() * 100.0 / expectedWrites
+                double readGB = (double) logger.bytesRead / (1024 * 1024 * 1024)
+                double writeGB = (double) logger.bytesWritten / (1024 * 1024 * 1024)
+                logger.logAndPrint sprintf("%%%.2f   num=${logger.numRecords} rGB=%.2f wGB=%.2f rFail=%s wFail=%s notFound=%s",
+                        percDone, readGB, writeGB, logger.readFails, logger.writeFails, logger.readsNotFound)
+                Thread.sleep(5 * 1000)
+            }
+        }
+    
+        logger.start()
+        def threads = (0..<cfg.numThreads).collect { threadNo ->
+            Thread.start {
+                def client = storage.createClient()
+                Random rand = new Random()
+                Porker porker = new Porker(client, cfg, logger)
+    
+                cfg.threadIters.times {
+                    porker.executeIter(rand)
+                }
+            }
+        }
+        threads*.join()
+        shuttingDown.set(true)
+        logger.end()
+        logger.printStats()
     }
 
     void close() {

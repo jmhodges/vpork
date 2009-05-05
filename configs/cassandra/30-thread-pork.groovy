@@ -1,3 +1,4 @@
+storageType="cassandra"
 testName="30-thread-pork"
 
 /**
@@ -5,7 +6,7 @@ testName="30-thread-pork"
  */
 storeFactory {
     coreThreads       = 30
-    maxThreads        = 30
+    maxThreads        = 40
     maxQueuedRequests = 100
     maxConnsPerNode   = 30
     maxTotalConns     = 500

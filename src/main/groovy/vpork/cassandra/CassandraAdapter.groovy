@@ -5,6 +5,7 @@ package vpork.cassandra
 
 
 import org.apache.cassandra.service.Cassandra;
+import org.apache.cassandra.service.NotFoundException;
 
 /**
  * Adapts the Cassandra interface to the one used by VPork

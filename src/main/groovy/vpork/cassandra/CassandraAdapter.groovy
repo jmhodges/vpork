@@ -22,7 +22,11 @@ public class CassandraAdapter {
 	}
 	
 	def get(String key) {
-	    return client.get_column(tableName, key, columnFamilyColumn);
+	    try {
+	        return client.get_column(tableName, key, columnFamilyColumn);
+	    } catch (NotFoundException e) {
+	        return null; //it needs null if nothing was found
+	    }
 	}
 	
 	void put(String key, byte[] value) {

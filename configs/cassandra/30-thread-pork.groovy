@@ -5,12 +5,9 @@ testName="30-thread-pork"
  * Configuration of the Voldemort ClientStore.
  */
 storeFactory {
-    coreThreads       = 30
-    maxThreads        = 40
-    maxQueuedRequests = 100
-    maxConnsPerNode   = 30
-    maxTotalConns     = 500
-    storePort         = 6666
+    storePort         = 9160
+    tableName         = "Table1"
+    columnFamilyColumn         = "Standard1:column"
 }
 
 // # of client threads to start

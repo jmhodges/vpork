@@ -18,7 +18,7 @@
 package vpork
 
 import vpork.voldemort.Voldemort
-//import vpork.cassandra.Cassandra
+import vpork.cassandra.Cassandra
 
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -98,17 +98,18 @@ class VPork {
         List<String> nodes = nodesFile.readLines()
         
         StatsLogger logger = new StatsLogger(cfg)
-        VPork vp = null;
+        def storage = null;
+        
         if("cassandra" == cfg.storageType) {
-            
+            storage = new Cassandra(cfg, nodes, logger)
         } else if("voldemort" == cfg.storageType) {
-            Voldemort voldemort = new Voldemort(cfg, nodes, logger)
-            vp = new VPork(cfg, voldemort, logger)
+            storage = new Voldemort(cfg, nodes, logger)
         } else {
             println "Storage type not supported: ${cfg.storageType}"
             return
         }
         
+        VPork vp = new VPork(cfg, storage, logger)
         vp.setup()
         vp.execute()
         vp.close()

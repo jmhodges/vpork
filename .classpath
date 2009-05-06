@@ -30,5 +30,7 @@
 	<classpathentry kind="lib" path="lib/xerces.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="con" path="GROOVY_SUPPORT"/>
+	<classpathentry kind="lib" path="lib/cassandra-thrift-0.3-dev.jar"/>
+	<classpathentry kind="lib" path="lib/libthrift.jar"/>
 	<classpathentry kind="output" path="build/eclipse-classes"/>
 </classpath>

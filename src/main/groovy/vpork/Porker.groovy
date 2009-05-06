@@ -47,7 +47,7 @@ public class Porker{
             try {
                 storeWrite(r)
             } catch(Exception e) {
-                e.printStackTrace()
+                //e.printStackTrace()
                 logger.writeFails.incrementAndGet()
             }
         }
@@ -57,7 +57,7 @@ public class Porker{
             try {
                 storeRead(r)
             } catch(Exception e) {
-                e.printStackTrace()
+                //e.printStackTrace()
                 logger.readFails.incrementAndGet()
             }
         }

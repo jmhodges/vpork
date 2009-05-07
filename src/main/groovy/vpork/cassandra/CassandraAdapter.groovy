@@ -31,7 +31,7 @@ public class CassandraAdapter {
 	}
 	
 	void put(String key, byte[] value) {
-	    client.insert(tableName, key, columnFamilyColumn, value, 0, false);
+	    client.insert(tableName, key, columnFamilyColumn, value, System.currentTimeMillis(), true);
 	}
 	
 }

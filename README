@@ -1,7 +1,7 @@
 VPork
 
 Introduction
-VPork is a utility for load-testing a distributed hash table (namely, project Voldemort).
+VPork is a utility for load-testing various distributed databases.
 
 
 Capabilities
@@ -15,24 +15,27 @@ VPork was written with a fairly specific use-case in mind, but provides a fairly
 
 
 Pre-Requisites
-These steps already assume that you have Voldemort up and running in a cluster. The project ships with very useful tools for starting/stopping/resetting a cluster, and vpork is able to use the configurations from your Voldemort deployment. In this documentation we will assume project-voldemort is installed in:
-/mnt/project-voldemort
-
+These steps already assume that you have distributed database up and running in a cluster. 
 VPork also requires groovy, which can be obtained at groovy.codehaus.org
 
 
 Install / Configure
-
 Download vpork:
 
 $ git clone git://github.com/trav/vpork.git
 
+For Voldemort:
 Install an appropriate stores.xml file. VPork ships with a file in templates/perfstores.xml, which contains a store called ‘bytez’ which is used by VPork. You can copy perfstores.xml directly to your configuration directory or make similar changes to your existing configs:
 
 $ cp templates/perfstores.xml /mnt/project-voldemort/config/single_node_cluster/config/stores.xml
-Deal out the Porking
 
 $ ./vpork.sh configs/voldemort/30-thread-pork.groovy configs/voldemort/nodes.conf
+
+For Cassandra:
+You can use the default storage settings for Cassandra. Just edit the Vpork nodes.conf file to include the nodes in your cluster.
+
+$ ./vpork.sh configs/cassandra/30-thread-pork.groovy configs/cassandra/nodes.conf
+
 
 If everything is working, you should see results in results/30-thread-pork-0
 

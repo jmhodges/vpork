@@ -32,5 +32,7 @@
 	<classpathentry exported="true" kind="con" path="GROOVY_SUPPORT"/>
 	<classpathentry kind="lib" path="lib/cassandra-thrift-0.3-dev.jar"/>
 	<classpathentry kind="lib" path="lib/libthrift.jar"/>
+	<classpathentry kind="lib" path="lib/commons-discovery-0.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
 	<classpathentry kind="output" path="build/eclipse-classes"/>
 </classpath>

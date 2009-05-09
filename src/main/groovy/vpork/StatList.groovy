@@ -1,6 +1,7 @@
 package vpork
 
 import java.util.concurrent.ConcurrentLinkedQueue
+import org.apache.commons.math.stat.descriptive.moment.StandardDeviation
 
 class StatList {
     ConcurrentLinkedQueue<Double> vals = []
@@ -23,5 +24,11 @@ class StatList {
         List vList = vals.sort()
         int idx = p * (double)vList.size()
         vList[idx]
+    }
+    
+    double getStandardDeviation() {
+        double[] data = vals.toArray()
+        StandardDeviation sd = new StandardDeviation();
+        return sd.evaluate(data)
     }
 }

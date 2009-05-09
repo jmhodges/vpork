@@ -1,0 +1,67 @@
+VPork
+
+Introduction
+VPork is a utility for load-testing a distributed hash table (namely, project Voldemort).
+
+
+Capabilities
+VPork was written with a fairly specific use-case in mind, but provides a fairly general pattern of access:
+
+    * A single JVM is started, with any number of client threads
+    * Each thread executes for a given number of iterations
+    * For each iteration, the thread can read an existing record, and/or create a new one
+    * The probability of each read/write is configurable
+    * The location of where reads happen is configurable (by default, it reads the most recently written records, trailing off to less frequent reads of writes which occurred long ago)
+
+
+Pre-Requisites
+These steps already assume that you have Voldemort up and running in a cluster. The project ships with very useful tools for starting/stopping/resetting a cluster, and vpork is able to use the configurations from your Voldemort deployment. In this documentation we will assume project-voldemort is installed in:
+/mnt/project-voldemort
+
+VPork also requires groovy, which can be obtained at groovy.codehaus.org
+
+
+Install / Configure
+
+Download vpork:
+
+$ git clone git://github.com/trav/vpork.git
+
+Install an appropriate stores.xml file. VPork ships with a file in templates/perfstores.xml, which contains a store called ‘bytez’ which is used by VPork. You can copy perfstores.xml directly to your configuration directory or make similar changes to your existing configs:
+
+$ cp templates/perfstores.xml /mnt/project-voldemort/config/single_node_cluster/config/stores.xml
+Deal out the Porking
+
+$ ./vpork.sh configs/voldemort/30-thread-pork.groovy configs/voldemort/nodes.conf
+
+If everything is working, you should see results in results/30-thread-pork-0
+
+
+Log files
+
+The output of VPork is put into a test-versioned directory with snapshots of your Voldemort configurations:
+
+$ cat results/30-thread-pork-0/progress.log
+
+
+
+
+Mar 31, 2009 6:21:17 PM - Writes:
+Mar 31, 2009 6:21:17 PM -   Num Writes:           159855
+Mar 31, 2009 6:21:17 PM -   Write Failures:       0
+Mar 31, 2009 6:21:17 PM -   Write Latency:        85.94 ms
+Mar 31, 2009 6:21:19 PM -   Write Latency (%99):  319.00 ms
+Mar 31, 2009 6:21:19 PM -   Bytes Written:        3658.79 MB
+Mar 31, 2009 6:21:19 PM -   Thread w/Throughput:  0.27 KB / ms
+Mar 31, 2009 6:21:19 PM -   Total w/Throughput:   24.29 KB / ms
+Mar 31, 2009 6:21:19 PM - 
+Mar 31, 2009 6:21:19 PM - Reads:
+Mar 31, 2009 6:21:19 PM -   Num Read:             19872
+Mar 31, 2009 6:21:19 PM -   Read Failures:        0
+Mar 31, 2009 6:21:19 PM -   Read Latency:         70.36 ms
+Mar 31, 2009 6:21:19 PM -   Read Latency (%99):   298.00 ms
+Mar 31, 2009 6:21:19 PM -   Read Not Found:       12 (%0.06)
+Mar 31, 2009 6:21:19 PM -   Bytes Read:           453.94 MB
+Mar 31, 2009 6:21:19 PM -   Thread r/Throughput:  0.33 KB / ms
+Mar 31, 2009 6:21:19 PM -   Total r/Throughput:   3.01 KB / ms
+

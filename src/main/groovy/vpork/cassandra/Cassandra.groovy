@@ -25,13 +25,11 @@ public class Cassandra {
     private def cfg
     private List<String> nodes
     
-    private StatsLogger logger
     private Random r = new Random();
     
-    Cassandra(cfg, List<String> nodes, StatsLogger logger) {
+    Cassandra(cfg, List<String> nodes) {
         this.cfg           = cfg
         this.nodes         = nodes
-        this.logger = logger;
     }
           
     def createClient() {

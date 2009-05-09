@@ -101,7 +101,7 @@ class VPork {
         def storage = null;
         
         if("cassandra" == cfg.storageType) {
-            storage = new Cassandra(cfg, nodes, logger)
+            storage = new Cassandra(cfg, nodes)
         } else if("voldemort" == cfg.storageType) {
             storage = new Voldemort(cfg, nodes, logger)
         } else {

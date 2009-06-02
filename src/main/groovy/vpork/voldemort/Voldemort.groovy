@@ -1,22 +1,23 @@
 package vpork.voldemort
 
-
-import vpork.StatsLogger
-
 import voldemort.client.StoreClientFactory
 import voldemort.client.SocketStoreClientFactory
+import voldemort.client.ClientConfig
+
 import vpork.HashClient
+import vpork.StatsLogger
+
 
 public class Voldemort {
-   
     private def cfg
     private List<String> nodes
     private StoreClientFactory storeFact
     private StatsLogger logger
-    
+
+
     Voldemort(cfg, List<String> nodes, StatsLogger logger) {
-        this.cfg           = cfg
-        this.nodes         = nodes
+        this.cfg    = cfg
+        this.nodes  = nodes
         this.logger = logger;
     }
           
@@ -26,16 +27,17 @@ public class Voldemort {
     
     void setup() {
         String[] bootstrap = generateBootstrapUrls(nodes, cfg.storePort ?: 6666)
-        storeFact = new SocketStoreClientFactory(cfg.storeFactory.coreThreads,
-                                               cfg.storeFactory.maxThreads,
-                                               cfg.storeFactory.maxQueuedRequests,
-                                               cfg.storeFactory.maxConnsPerNode,
-                                               cfg.storeFactory.maxTotalConns,
-                                               bootstrap)
+        ClientConfig voldConfig = new ClientConfig()
+
+        voldConfig.bootstrapUrls = bootstrap
+        voldConfig.maxThreads = cfg.storeFactory.maxThreads
+        voldConfig.maxConnectionsPerNode = cfg.storeFactory.maxConnsPerNode
+        voldConfig.maxQueuedRequests = cfg.storeFactory.maxQueuedRequests
+        voldConfig.enableJmx = false
+        storeFact = new SocketStoreClientFactory(voldConfig)
     }
     
     private String[] generateBootstrapUrls(List<String> hosts, int serverPort) {
         hosts.collect { "tcp://${it}:${serverPort}"} as String[]
     }
-     
 }

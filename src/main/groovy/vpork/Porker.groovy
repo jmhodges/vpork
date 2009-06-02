@@ -37,7 +37,7 @@ public class Porker {
             try {
                 storeWrite(r)
             } catch(Exception e) {
-                //e.printStackTrace()
+                e.printStackTrace()
                 logger.writeFails.incrementAndGet()
             }
         }
@@ -47,7 +47,7 @@ public class Porker {
             try {
                 storeRead(r)
             } catch(Exception e) {
-                //e.printStackTrace()
+                e.printStackTrace()
                 logger.readFails.incrementAndGet()
             }
         }
@@ -83,7 +83,7 @@ public class Porker {
         if (val == null) {
             logger.readsNotFound.addAndGet(1)
         } else {
-            logger.bytesRead.addAndGet(val.value.size())
+            logger.bytesRead.addAndGet(val.size())
             logger.readTimes << time
             logger.timeReading.addAndGet(time)
             logger.readLog.log(maxTime, time)

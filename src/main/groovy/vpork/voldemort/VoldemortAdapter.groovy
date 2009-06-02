@@ -12,7 +12,7 @@ class VoldemortAdapter implements HashClient {
     }
 
 	byte[] get(String key) {
-        client.get(key)
+        client.get(key).value
 	}
 
 	void put(String key, byte[] value) {

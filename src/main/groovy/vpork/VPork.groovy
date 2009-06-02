@@ -17,14 +17,15 @@
  */
 package vpork
 
-import vpork.voldemort.Voldemort
-import vpork.cassandra.Cassandra
+import vpork.voldemort.VoldemortClientFactory
+import vpork.cassandra.CassandraClientFactory
+import vpork.memory.MemoryClientFactory
 
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.Executors
-import vpork.memory.Memory
+
 
 class VPork {
     
@@ -122,11 +123,11 @@ class VPork {
         def storage = null;
         
         if("cassandra" == cfg.storageType) {
-            storage = new Cassandra(cfg, nodes)
+            storage = new CassandraClientFactory(cfg, nodes)
         } else if("voldemort" == cfg.storageType) {
-            storage = new Voldemort(cfg, nodes, logger)
+            storage = new VoldemortClientFactory(cfg, nodes, logger)
         } else if("memory" == cfg.storageType) {
-            storage = new Memory()
+            storage = new MemoryClientFactory()
         } else {
             println "Storage type not supported: ${cfg.storageType}"
             return

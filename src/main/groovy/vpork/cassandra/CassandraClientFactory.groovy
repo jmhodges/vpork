@@ -1,17 +1,8 @@
-/**
- * 
- */
 package vpork.cassandra
 
 
-import vpork.StatsLogger
-
-import java.util.concurrent.atomic.AtomicBoolean
-
-import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
@@ -21,18 +12,19 @@ import vpork.HashClient;
 /**
  * Handles setting up a client connection to Cassandra
  */
-public class Cassandra {
+public class CassandraClientFactory {
    
     private def cfg
     private List<String> nodes
     
     private Random r = new Random();
     
-    Cassandra(cfg, List<String> nodes) {
+    CassandraClientFactory(cfg, List<String> nodes) {
         this.cfg           = cfg
         this.nodes         = nodes
     }
-          
+
+
     HashClient createClient() {
         String node = nodes[r.nextInt(nodes.size())]
         TTransport transport = new TSocket(node, cfg.storeFactory.storePort)

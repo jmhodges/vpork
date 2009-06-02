@@ -4,8 +4,9 @@ import vpork.HashClient
 
 import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
+import vpork.HashClientFactory
 
-class Memory {
+class MemoryClientFactory implements HashClientFactory {
     private Map hash = new ConcurrentHashMap()
 
     HashClient createClient() {

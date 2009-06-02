@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.Executors
+import vpork.memory.Memory
 
 class VPork {
     
@@ -101,7 +102,9 @@ class VPork {
     
     static void main(String[] args) {
         if (args.length < 2) {
-            println "Syntax:  vpork <vporkConfig.groovy> <nodesFile>"
+            println "Syntax:  vpork <configFile> <nodesFile>"
+            println ""
+            println "Example: vpork configs/memory/30-thread-pork.groovy configs/memory/nodes"
             return
         }
 
@@ -122,6 +125,8 @@ class VPork {
             storage = new Cassandra(cfg, nodes)
         } else if("voldemort" == cfg.storageType) {
             storage = new Voldemort(cfg, nodes, logger)
+        } else if("memory" == cfg.storageType) {
+            storage = new Memory()
         } else {
             println "Storage type not supported: ${cfg.storageType}"
             return

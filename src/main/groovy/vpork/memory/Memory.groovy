@@ -1,18 +1,16 @@
-package vpork.memory;
+package vpork.memory
 
-import vpork.HashClient;
+import vpork.HashClient
 
 import java.util.Map
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap
 
-/**
- */
 class Memory {
     private Map hash = new ConcurrentHashMap()
 
     HashClient createClient() {
-        [ get : { key -> hash[key] },
-          put : { key, value -> hash[key] = value }
+        [ get : { String key -> hash.get(key) },
+          put : { String key, byte[] value -> hash.put(key, value) }
         ] as HashClient
     }
 

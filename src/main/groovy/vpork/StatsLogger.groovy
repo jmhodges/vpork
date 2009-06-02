@@ -1,15 +1,9 @@
-/**
- * 
- */
 package vpork
 
 
 import java.util.concurrent.atomic.AtomicLong
 import java.text.DateFormat
 
-/**
- *
- */
 public class StatsLogger {
 
     private AtomicLong numRecords    = new AtomicLong(0)

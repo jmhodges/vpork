@@ -72,7 +72,7 @@ public class Porker {
             // Haven't collected the minimum records yet.
             return
         }
-    
+
         long recordsAgo = readFactor(rand.nextDouble()) * (double)maxTime
         logger.readDistLog.log(recordsAgo)
         // We invert here, because we are more likely to read the most recent
@@ -97,8 +97,8 @@ public class Porker {
         String newId = "r_${numRecs}"
         long start = now()
         hash.put(newId, bytes)
-        logger.bytesWritten.addAndGet(bytes.size())
         long time = now() - start
+        logger.bytesWritten.addAndGet(bytes.size())
         logger.writeTimes << time
         logger.timeWriting.addAndGet(time)
         logger.writeLog.log(numRecs, time)

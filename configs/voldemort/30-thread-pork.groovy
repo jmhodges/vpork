@@ -16,15 +16,14 @@ storeFactory {
 numThreads  = 30
 
 // Odds of performing a read op per iteration (1 = 100%)
-readOdds    = 0.1
-writeOdds   = 0.8
-rewriteOdds = 0.1
+readOdds    = 0.8
+writeOdds   = 0.2
 
 // How many iterations should each thread execute?
-threadIters = 200
+threadIters = 1000
 
 // How much data should be written per write operation?
-dataSize    = (8 + 4) * 2000
+dataSize    = 5000
 
 // What function best describes our data access patterns?  This factor is
 // is applied across the range of already-written records.  We choose a function

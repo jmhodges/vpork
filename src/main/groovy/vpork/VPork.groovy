@@ -21,6 +21,9 @@ import vpork.voldemort.Voldemort
 import vpork.cassandra.Cassandra
 
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.Executors
 
 class VPork {
     
@@ -43,6 +46,21 @@ class VPork {
         storage.setup()
     }
 
+    void execute() {
+        AtomicBoolean shuttingDown = new AtomicBoolean(false)
+        testPorkerConnection()
+        startLoggerThread(shuttingDown)
+
+        logger.start()
+
+        ExecutorService executor = startPorkerThreads()
+        executor.shutdown()
+        executor.awaitTermination(60 * 60 * 2, TimeUnit.SECONDS) // 2 hours
+        shuttingDown.set(true)
+        logger.end()
+        logger.printStats()
+    }
+
     private void startLoggerThread(AtomicBoolean shuttingDown) {
         Thread.startDaemon {
             double expectedWrites = cfg.numThreads * cfg.threadIters * cfg.writeOdds * cfg.dataSize
@@ -57,28 +75,15 @@ class VPork {
         }
     }
 
-    void execute() {
-        AtomicBoolean shuttingDown = new AtomicBoolean(false)
-        testPorkerConnection()
-        startLoggerThread(shuttingDown)
-
-        logger.start()
-
-        List<Thread> threads = startPorkerThreads()
-        threads*.join()
-
-        shuttingDown.set(true)
-        logger.end()
-        logger.printStats()
-    }
-
     private void testPorkerConnection() {
         new Porker(storage.createClient(), cfg, logger).testSetup()
     }
 
-    private List<Thread> startPorkerThreads() {
-        (0..<cfg.numThreads).collect { threadNo ->
-            Thread.start {
+    private ExecutorService startPorkerThreads() {
+        ExecutorService executor = Executors.newFixedThreadPool(cfg.numThreads)
+
+        (0..<cfg.numThreads).each { threadNo ->
+            executor.execute() {
                 def client = storage.createClient()
                 Porker porker = new Porker(client, cfg, logger)
 
@@ -87,6 +92,7 @@ class VPork {
                 }
             }
         }
+        executor
     }
 
     void close() {

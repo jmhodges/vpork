@@ -32,7 +32,15 @@ public class Voldemort {
         voldConfig.bootstrapUrls = bootstrap
         voldConfig.maxThreads = cfg.storeFactory.maxThreads
         voldConfig.maxConnectionsPerNode = cfg.storeFactory.maxConnsPerNode
-        voldConfig.maxQueuedRequests = cfg.storeFactory.maxQueuedRequests
+
+        if (cfg.storeFactory.maxQueuedRequests) {
+            voldConfig.maxQueuedRequests = cfg.storeFactory.maxQueuedRequests
+        }
+        if (cfg.storeFactory.maxTotalConns) {
+            voldConfig.maxTotalConnections = cfg.storeFactory.maxTotalConns
+        }
+
+        // TODO:  Fix JMX classloader issues with Groovy
         voldConfig.enableJmx = false
         storeFact = new SocketStoreClientFactory(voldConfig)
     }

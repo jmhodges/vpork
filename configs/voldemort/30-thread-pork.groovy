@@ -5,12 +5,11 @@ testName="30-thread-pork"
  * Configuration of the Voldemort ClientStore.
  */
 storeFactory {
-    coreThreads       = 30
-    maxThreads        = 30
-    maxQueuedRequests = 100
-    maxConnsPerNode   = 30
-    maxTotalConns     = 500
+    maxThreads        = 100
+    maxConnsPerNode   = 100
     storePort         = 6666
+//    maxTotalConns     = 500
+//    maxQueuedRequests = 100
 }
 
 // # of client threads to start
@@ -22,7 +21,7 @@ writeOdds   = 0.8
 rewriteOdds = 0.1
 
 // How many iterations should each thread execute?
-threadIters = 2000
+threadIters = 200
 
 // How much data should be written per write operation?
 dataSize    = (8 + 4) * 2000

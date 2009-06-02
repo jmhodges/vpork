@@ -1,10 +1,15 @@
 package vpork
 
-import java.util.concurrent.ConcurrentLinkedQueue
 import org.apache.commons.math.stat.descriptive.moment.StandardDeviation
+import org.apache.commons.math.stat.descriptive.rank.Percentile
+import java.util.concurrent.ArrayBlockingQueue
 
 class StatList {
-    ConcurrentLinkedQueue<Double> vals = []
+    private Queue<Double> vals
+
+    StatList(int maxSize) {
+        vals = new ArrayBlockingQueue(maxSize)
+    }
 
     def leftShift(double b) {
         vals.add(b)
@@ -17,18 +22,11 @@ class StatList {
     }
 
     double getPercentile(double p) {
-        if (!vals) {
-            return Double.NaN
-        }
-        
         List vList = vals.sort()
-        int idx = p * (double)vList.size()
-        vList[idx]
+        new Percentile(p).evaluate(vList as double[])
     }
     
     double getStandardDeviation() {
-        double[] data = vals.toArray()
-        StandardDeviation sd = new StandardDeviation();
-        return sd.evaluate(data)
+        new StandardDeviation().evaluate(vals as double[])
     }
 }

@@ -5,7 +5,6 @@ import voldemort.client.SocketStoreClientFactory
 import voldemort.client.ClientConfig
 
 import vpork.HashClient
-import vpork.StatsLogger
 import vpork.HashClientFactory
 
 
@@ -13,13 +12,11 @@ class VoldemortClientFactory implements HashClientFactory {
     private def cfg
     private List<String> nodes
     private StoreClientFactory storeFact
-    private StatsLogger logger
 
 
-    VoldemortClientFactory(cfg, List<String> nodes, StatsLogger logger) {
+    VoldemortClientFactory(cfg, List<String> nodes) {
         this.cfg    = cfg
         this.nodes  = nodes
-        this.logger = logger;
     }
 
 

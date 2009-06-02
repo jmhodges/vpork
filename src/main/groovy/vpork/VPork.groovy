@@ -125,7 +125,7 @@ class VPork {
         if("cassandra" == cfg.storageType) {
             storage = new CassandraClientFactory(cfg, nodes)
         } else if("voldemort" == cfg.storageType) {
-            storage = new VoldemortClientFactory(cfg, nodes, logger)
+            storage = new VoldemortClientFactory(cfg, nodes)
         } else if("memory" == cfg.storageType) {
             storage = new MemoryClientFactory()
         } else {

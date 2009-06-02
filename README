@@ -5,34 +5,47 @@ VPork is a utility for load-testing various distributed databases.
 
 
 Capabilities
-VPork was written with a fairly specific use-case in mind, but provides a fairly general pattern of access:
+VPork was written with a fairly specific use-case in mind, but provides a
+fairly general pattern of access:
 
     * A single JVM is started, with any number of client threads
     * Each thread executes for a given number of iterations
-    * For each iteration, the thread can read an existing record, and/or create a new one
+    * For each iteration, the thread can read an existing record, and/or create
+      a new one
     * The probability of each read/write is configurable
-    * The location of where reads happen is configurable (by default, it reads the most recently written records, trailing off to less frequent reads of writes which occurred long ago)
+    * The location of where reads happen is configurable (by default, it
+      reads the most recently written records, trailing off to less frequent
+      reads of writes which occurred long ago)
 
 
 Pre-Requisites
-These steps already assume that you have distributed database up and running in a cluster. 
+These steps already assume that you have distributed database up and running in
+a cluster.
+
 VPork also requires groovy, which can be obtained at groovy.codehaus.org
 
 
-Install / Configure
+
+** Install / Configure **
 Download vpork:
 
 $ git clone git://github.com/trav/vpork.git
 
+
 For Voldemort:
-Install an appropriate stores.xml file. VPork ships with a file in templates/perfstores.xml, which contains a store called ‘bytez’ which is used by VPork. You can copy perfstores.xml directly to your configuration directory or make similar changes to your existing configs:
+Install an appropriate stores.xml file. VPork ships with a
+file in templates/perfstores.xml, which contains a store called 'bytez'
+which is used by VPork. You can copy perfstores.xml directly to your
+configuration directory or make similar changes to your existing configs:
 
 $ cp templates/perfstores.xml /mnt/project-voldemort/config/single_node_cluster/config/stores.xml
 
 $ ./vpork.sh configs/voldemort/30-thread-pork.groovy configs/voldemort/nodes.conf
 
+
 For Cassandra:
-You can use the default storage settings for Cassandra. Just edit the Vpork nodes.conf file to include the nodes in your cluster.
+You can use the default storage settings for Cassandra.
+Just edit the Vpork nodes.conf file to include the nodes in your cluster.
 
 $ ./vpork.sh configs/cassandra/30-thread-pork.groovy configs/cassandra/nodes.conf
 
@@ -40,8 +53,8 @@ $ ./vpork.sh configs/cassandra/30-thread-pork.groovy configs/cassandra/nodes.con
 If everything is working, you should see results in results/30-thread-pork-0
 
 
-Log files
 
+** Log files **
 The output of VPork is put into a test-versioned directory with snapshots of your Voldemort configurations:
 
 $ cat results/30-thread-pork-0/progress.log

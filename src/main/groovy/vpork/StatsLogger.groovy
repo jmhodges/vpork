@@ -26,7 +26,7 @@ public class StatsLogger {
     private Writer     progressLog
     
     private File       logDir
-    
+
     private long       porkStart
     private long       porkEnd
     
@@ -71,7 +71,11 @@ public class StatsLogger {
         readDistLog.close()
         progressLog.close()
     }
-    
+
+    File getLogDir() {
+        this.logDir
+    }
+
     private File makeLogDir() {
         File res = cfg.logDir ?: 'results' as File
 

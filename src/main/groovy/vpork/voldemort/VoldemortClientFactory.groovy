@@ -7,8 +7,8 @@ import voldemort.client.ClientConfig
 import vpork.HashClient
 import vpork.HashClientFactory
 import vpork.StatsLogger
-import vpork.SetupException
 import vpork.NodesUtil
+import vpork.SetupException
 
 
 class VoldemortClientFactory implements HashClientFactory {
@@ -20,8 +20,21 @@ class VoldemortClientFactory implements HashClientFactory {
         new VoldemortAdapter(storeFact.getStoreClient("bytez"))
     }
 
+    private void snapshotConfigFiles(File srcDir) {
+        log.logAndPrint "Copying $srcDir to ${log.logDir}"
+        new AntBuilder().copy(toDir: log.logDir) {
+            fileset(dir: srcDir)
+        }
+    }
+
     void setup(ConfigObject cfg, StatsLogger log, List<String>factoryArgs) {
+        if (factoryArgs.size() != 1) {
+            throw new SetupException("You must specify a nodes file")
+        }
+
         this.log = log
+
+        snapshotConfigFiles((factoryArgs[0] as File).parentFile)
 
         List<String> nodes = NodesUtil.loadNodes(log, factoryArgs)
         String[] bootstrap = generateBootstrapUrls(nodes, cfg.storePort ?: 6666)

@@ -6,15 +6,17 @@ public class Porker {
     private StatsLogger logger
     private Closure readFactor
     private byte[] bytes
-
+    private Random rand
 
     public Porker(HashClient hash, cfg, StatsLogger logger) {
-        this.hash = hash;
-        this.cfg    = cfg;
-        this.logger = logger;
+        this.hash = hash
+        this.cfg    = cfg
+        this.logger = logger
         
         this.readFactor  = cfg.readFactor
         this.bytes       = new byte[cfg.dataSize]
+
+        this.rand = new Random()
     }
   
     private long now(){
@@ -31,21 +33,21 @@ public class Porker {
         logger.logAndPrint "Giddyup boy!  "
     }
     
-    void executeIter(Random r) {
-        if (r.nextDouble() < cfg.writeOdds) {
+    void executeIter() {
+        if (rand.nextDouble() < cfg.writeOdds) {
             logger.numWrites.addAndGet(1)
             try {
-                storeWrite(r)
+                storeWrite()
             } catch(Exception e) {
                 e.printStackTrace()
                 logger.writeFails.incrementAndGet()
             }
         }
     
-        if (r.nextDouble() < cfg.readOdds) {
+        if (rand.nextDouble() < cfg.readOdds) {
             logger.numReads.addAndGet(1)
             try {
-                storeRead(r)
+                storeRead()
             } catch(Exception e) {
                 e.printStackTrace()
                 logger.readFails.incrementAndGet()
@@ -62,7 +64,7 @@ public class Porker {
      * records, as it is possible that recent records have not been written to
      * storage, even though numRecords has been incremented.
      */
-    void storeRead(Random r) {
+    void storeRead() {
         long timeOffset = 3 * cfg.numThreads
         long curTime = logger.numRecords.get()
         long maxTime = curTime - timeOffset
@@ -71,7 +73,7 @@ public class Porker {
             return
         }
     
-        long recordsAgo = readFactor(r.nextDouble()) * (double)maxTime
+        long recordsAgo = readFactor(rand.nextDouble()) * (double)maxTime
         logger.readDistLog.log(recordsAgo)
         // We invert here, because we are more likely to read the most recent
         // record (not the furthest ago)
@@ -90,7 +92,7 @@ public class Porker {
         }
     }
   
-    void storeWrite(Random r) {
+    void storeWrite() {
         long numRecs = logger.numRecords.addAndGet(1)
         String newId = "r_${numRecs}"
         long start = now()

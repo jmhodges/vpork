@@ -42,11 +42,8 @@ class VPork {
         logger.setup()
         storage.setup()
     }
-    
-    void execute() {
-        new Porker(storage.createClient(), cfg, logger).testSetup()
-        
-        AtomicBoolean shuttingDown = new AtomicBoolean(false)
+
+    private void startLoggerThread(AtomicBoolean shuttingDown) {
         Thread.startDaemon {
             double expectedWrites = cfg.numThreads * cfg.threadIters * cfg.writeOdds * cfg.dataSize
             while(!shuttingDown.get()) {
@@ -58,23 +55,38 @@ class VPork {
                 Thread.sleep(5 * 1000)
             }
         }
-    
+    }
+
+    void execute() {
+        AtomicBoolean shuttingDown = new AtomicBoolean(false)
+        testPorkerConnection()
+        startLoggerThread(shuttingDown)
+
         logger.start()
-        def threads = (0..<cfg.numThreads).collect { threadNo ->
-            Thread.start {
-                def client = storage.createClient()
-                Random rand = new Random()
-                Porker porker = new Porker(client, cfg, logger)
-    
-                cfg.threadIters.times {
-                    porker.executeIter(rand)
-                }
-            }
-        }
+
+        List<Thread> threads = startPorkerThreads()
         threads*.join()
+
         shuttingDown.set(true)
         logger.end()
         logger.printStats()
+    }
+
+    private void testPorkerConnection() {
+        new Porker(storage.createClient(), cfg, logger).testSetup()
+    }
+
+    private List<Thread> startPorkerThreads() {
+        (0..<cfg.numThreads).collect { threadNo ->
+            Thread.start {
+                def client = storage.createClient()
+                Porker porker = new Porker(client, cfg, logger)
+
+                cfg.threadIters.times {
+                    porker.executeIter()
+                }
+            }
+        }
     }
 
     void close() {

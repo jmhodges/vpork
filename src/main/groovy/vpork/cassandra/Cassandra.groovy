@@ -15,7 +15,8 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
-import org.apache.cassandra.service.Cassandra;
+import org.apache.cassandra.service.Cassandra
+import vpork.HashClient;
 
 /**
  * Handles setting up a client connection to Cassandra
@@ -32,7 +33,7 @@ public class Cassandra {
         this.nodes         = nodes
     }
           
-    def createClient() {
+    HashClient createClient() {
         String node = nodes[r.nextInt(nodes.size())]
         TTransport transport = new TSocket(node, cfg.storeFactory.storePort)
         TProtocol protocol = new TBinaryProtocol(transport)

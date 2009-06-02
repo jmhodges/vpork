@@ -1,16 +1,17 @@
 /**
- * 
+ *
  */
 package vpork.cassandra
 
 
 import org.apache.cassandra.service.Cassandra;
-import org.apache.cassandra.service.NotFoundException;
+import org.apache.cassandra.service.NotFoundException
+import vpork.HashClient;
 
 /**
  * Adapts the Cassandra interface to the one used by VPork
  */
-public class CassandraAdapter {
+public class CassandraAdapter implements HashClient {
 		
 	private Cassandra.Client client;
 	private String tableName;

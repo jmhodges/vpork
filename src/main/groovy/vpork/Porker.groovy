@@ -1,26 +1,16 @@
-/**
- * 
- */
- package vpork
+package vpork
 
-import java.util.concurrent.atomic.AtomicBoolean
-import vpork.voldemort.Voldemort
-
-/**
- *
- */
-public class Porker{
-
-    private def c; //client
-    private def cfg;
-    private StatsLogger logger;
-    
-    private Closure    readFactor
+public class Porker {
+    private HashClient hash
+    private def cfg
+    private StatsLogger logger
+    private Closure readFactor
     private byte[] bytes
-    
-    public Porker(client, cfg, StatsLogger logger) {
-        this.c = client;
-        this.cfg = cfg;
+
+
+    public Porker(HashClient hash, cfg, StatsLogger logger) {
+        this.hash = hash;
+        this.cfg    = cfg;
         this.logger = logger;
         
         this.readFactor  = cfg.readFactor
@@ -37,7 +27,7 @@ public class Porker{
     void testSetup() {
         // Fire a test shot to see if we can even operate
         logger.logAndPrint "Testing if our store even works ..."
-        c.put("test_${System.currentTimeMillis()}" as String, new byte[1])
+        hash.put("test_${System.currentTimeMillis()}" as String, new byte[1])
         logger.logAndPrint "Giddyup boy!  "
     }
     
@@ -88,7 +78,7 @@ public class Porker{
         long readRec = maxTime - recordsAgo
         String key = "r_${readRec}"
         long start = now()
-        def val = c.get(key)
+        def val = hash.get(key)
         long time = now() - start
         if (val == null) {
             logger.readsNotFound.addAndGet(1)
@@ -104,12 +94,11 @@ public class Porker{
         long numRecs = logger.numRecords.addAndGet(1)
         String newId = "r_${numRecs}"
         long start = now()
-        c.put(newId, bytes)
+        hash.put(newId, bytes)
         logger.bytesWritten.addAndGet(bytes.size())
         long time = now() - start
         logger.writeTimes << time
         logger.timeWriting.addAndGet(time)
-        logger.writeLog.log(numRecs, time)         
+        logger.writeLog.log(numRecs, time)
     }    
-  
 }

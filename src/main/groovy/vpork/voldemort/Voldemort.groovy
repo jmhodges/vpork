@@ -1,20 +1,13 @@
-/**
- * 
- */
 package vpork.voldemort
 
 
 import vpork.StatsLogger
 
-import voldemort.client.StoreClient
 import voldemort.client.StoreClientFactory
 import voldemort.client.SocketStoreClientFactory
-import java.util.concurrent.atomic.AtomicBoolean
+import vpork.HashClient
 
-/**
- *
- */
-public class Voldemort{
+public class Voldemort {
    
     private def cfg
     private List<String> nodes
@@ -27,8 +20,8 @@ public class Voldemort{
         this.logger = logger;
     }
           
-    def createClient() {
-        return storeFact.getStoreClient("bytez")
+    HashClient createClient() {
+        new VoldemortAdapter(storeFact.getStoreClient("bytez"))
     }
     
     void setup() {

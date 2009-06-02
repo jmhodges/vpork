@@ -10,4 +10,7 @@ done
 CLASSPATH="$CLASSPATH:src/main/groovy"
 
 export CLASSPATH
+
+export JAVA_OPTS=-Xmx4g
+
 groovy -cp $CLASSPATH $@

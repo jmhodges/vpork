@@ -28,15 +28,19 @@ import java.util.concurrent.Executors
 
 
 class VPork {
-    
-    private def cfg
-    private def storage //the system we're testing
-    private StatsLogger logger
 
-    VPork(cfg, storage, StatsLogger logger) {
+    private ConfigObject cfg
+    private HashClientFactory clientFactory 
+    private StatsLogger logger
+    private List<String>factoryArgs
+
+    VPork(ConfigObject cfg, HashClientFactory storage,
+          StatsLogger logger, List<String>factoryArgs)
+    {
         this.cfg = cfg
-        this.storage = storage
+        this.clientFactory = storage
         this.logger = logger
+        this.factoryArgs = factoryArgs
     }
 
      /**
@@ -45,7 +49,7 @@ class VPork {
      */
     void setup() {       
         logger.setup()
-        storage.setup()
+        clientFactory.setup(cfg, logger, factoryArgs)
     }
 
     void execute() {
@@ -78,7 +82,7 @@ class VPork {
     }
 
     private void testPorkerConnection() {
-        new Porker(storage.createClient(), cfg, logger).testSetup()
+        new Porker(clientFactory.createClient(), cfg, logger).testSetup()
     }
 
     private ExecutorService startPorkerThreads() {
@@ -86,7 +90,7 @@ class VPork {
 
         (0..<cfg.numThreads).each { threadNo ->
             executor.execute() {
-                def client = storage.createClient()
+                def client = clientFactory.createClient()
                 Porker porker = new Porker(client, cfg, logger)
 
                 cfg.threadIters.times {
@@ -100,41 +104,45 @@ class VPork {
     void close() {
         logger.close()
     }
-    
+
+    private static HashClientFactory loadFactory(String storageType) {
+        if(storageType == "cassandra") {
+            return new CassandraClientFactory()
+        } else if(storageType == "voldemort") {
+            return new VoldemortClientFactory()
+        } else if(storageType == "memory") {
+            return new MemoryClientFactory()
+        } else {
+            return null
+        }
+    }
+
     static void main(String[] args) {
-        if (args.length < 2) {
-            println "Syntax:  vpork <configFile> <nodesFile>"
+        if (args.length < 1) {
+            println "Syntax:  vpork <configFile> [nodesFile]"
             println ""
             println "Example: vpork configs/memory/30-thread-pork.groovy configs/memory/nodes"
+            println ""
+            println "Where config/memory/nodes is a flat file, each line containing a remote"
+            println "node to test against"
             return
         }
 
-        def cfg = new ConfigSlurper().parse(new File(args[0]).toURL())
-        File nodesFile = args[1] as File
+        ConfigObject cfg = new ConfigSlurper().parse(new File(args[0]).toURL())
 
-        if (!nodesFile.isFile()) {
-            println "Unable to read nodes file: ${nodesFile.absolutePath}"
-            return
-        }
-
-        List<String> nodes = nodesFile.readLines()
-        
         StatsLogger logger = new StatsLogger(cfg)
-        def storage = null;
-        
-        if("cassandra" == cfg.storageType) {
-            storage = new CassandraClientFactory(cfg, nodes)
-        } else if("voldemort" == cfg.storageType) {
-            storage = new VoldemortClientFactory(cfg, nodes)
-        } else if("memory" == cfg.storageType) {
-            storage = new MemoryClientFactory()
-        } else {
-            println "Storage type not supported: ${cfg.storageType}"
+        HashClientFactory storage = loadFactory(cfg.storageType)
+
+        List factoryArgs = args[1..<args.length]
+        VPork vp = new VPork(cfg, storage, logger, factoryArgs)
+
+        try {
+            vp.setup()
+        } catch(SetupException exc) {
+            println "Error running VPork.  Setup exception"
+            println "**: ${exc.message}"
             return
         }
-        
-        VPork vp = new VPork(cfg, storage, logger)
-        vp.setup()
         vp.execute()
         vp.close()
     }

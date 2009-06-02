@@ -1,7 +1,7 @@
 package vpork
 
 interface HashClientFactory {
-    void setup()
+    void setup(ConfigObject cfg, StatsLogger logger, List<String>factoryArgs)
 
     HashClient createClient()
 }

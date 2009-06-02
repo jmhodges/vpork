@@ -5,6 +5,7 @@ import vpork.HashClient
 import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
 import vpork.HashClientFactory
+import vpork.StatsLogger
 
 class MemoryClientFactory implements HashClientFactory {
     private Map hash = new ConcurrentHashMap()
@@ -15,6 +16,6 @@ class MemoryClientFactory implements HashClientFactory {
         ] as HashClient
     }
 
-    void setup() {
+    void setup(ConfigObject cfg, StatsLogger logger, List<String>factoryArgs) {
     }
 }

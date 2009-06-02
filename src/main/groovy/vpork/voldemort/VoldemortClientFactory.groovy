@@ -6,25 +6,24 @@ import voldemort.client.ClientConfig
 
 import vpork.HashClient
 import vpork.HashClientFactory
+import vpork.StatsLogger
+import vpork.SetupException
+import vpork.NodesUtil
 
 
 class VoldemortClientFactory implements HashClientFactory {
-    private def cfg
-    private List<String> nodes
     private StoreClientFactory storeFact
-
-
-    VoldemortClientFactory(cfg, List<String> nodes) {
-        this.cfg    = cfg
-        this.nodes  = nodes
-    }
-
+    private List<String> factoryArgs
+    private StatsLogger log
 
     HashClient createClient() {
         new VoldemortAdapter(storeFact.getStoreClient("bytez"))
     }
-    
-    void setup() {
+
+    void setup(ConfigObject cfg, StatsLogger log, List<String>factoryArgs) {
+        this.log = log
+
+        List<String> nodes = NodesUtil.loadNodes(log, factoryArgs)
         String[] bootstrap = generateBootstrapUrls(nodes, cfg.storePort ?: 6666)
         ClientConfig voldConfig = new ClientConfig()
 

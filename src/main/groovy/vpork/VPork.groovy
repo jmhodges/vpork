@@ -27,6 +27,9 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.Executors
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
+import java.util.concurrent.Executor
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.LinkedBlockingQueue
 
 
 class VPork {
@@ -89,7 +92,11 @@ class VPork {
     }
 
     private ExecutorService startPorkerThreads() {
-        ExecutorService executor = Executors.newFixedThreadPool(cfg.numThreads)
+        BlockingQueue workQueue = new ArrayBlockingQueue(20000)
+        Executor executor = new ThreadPoolExecutor(cfg.numThreads,
+                                                   cfg.numThreads,
+                                                   Long.MAX_VALUE, TimeUnit.MILLISECONDS,
+                                                   workQueue)
 
         // Fair queue of porkers
         BlockingQueue<Porker> porkers = new ArrayBlockingQueue(cfg.numThreads, true)
@@ -100,6 +107,11 @@ class VPork {
         }
 
         cfg.threadIters.times {
+            while (workQueue.size() > 10000) {
+                sleep(1000)
+                continue
+            }
+            
             executor.execute() {
                 Porker porker = porkers.take()
                 try {

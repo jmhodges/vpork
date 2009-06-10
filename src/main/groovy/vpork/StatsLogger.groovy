@@ -107,7 +107,7 @@ public class StatsLogger {
         logAndPrint sprintf("  Write Latency stdDev: %.2f", writeTimes.getStandardDeviation())
         logAndPrint sprintf("  Bytes Written:        %.2f MB", bytesWritten / (1024 * 1024))
         logAndPrint sprintf("  Thread w/Throughput:  %.2f KB / sec", (double)(bytesWritten / 1024.0) / (double)timeWriting.get())
-        logAndPrint sprintf("  Total w/Throughput:   %.2f KB / sec", (double)(bytesWritten / 1024.0) / (double)elapsed)
+        logAndPrint sprintf("  Total w/Throughput:   %.2f KB / sec", (double)(bytesWritten / 1024.0) / ((double)elapsed / 1000))
         logAndPrint ""
         logAndPrint sprintf("Reads:")
         logAndPrint sprintf("  Num Read:             ${numReads}")
@@ -119,7 +119,7 @@ public class StatsLogger {
         logAndPrint sprintf("  Read Not Found:       %s (%%%.2f)", readsNotFound, (double)readsNotFound * 100.0 / (double)numReads)
         logAndPrint sprintf("  Bytes Read:           %.2f MB", bytesRead / (1024 * 1024))
         logAndPrint sprintf("  Thread r/Throughput:  %.2f KB / sec", (double)(bytesRead / 1024.0) / (double)timeReading.get())
-        logAndPrint sprintf("  Total r/Throughput:   %.2f KB / sec", (double)(bytesRead / 1024.0) / (double) (elapsed / 1000))
+        logAndPrint sprintf("  Total r/Throughput:   %.2f KB / sec", (double)(bytesRead / 1024.0) / ((double)elapsed / 1000))
     }
     
     private void logAndPrint(String s) {

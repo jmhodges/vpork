@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.Executors
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
 
 
 class VPork {
@@ -88,14 +90,23 @@ class VPork {
     private ExecutorService startPorkerThreads() {
         ExecutorService executor = Executors.newFixedThreadPool(cfg.numThreads)
 
+        // Fair queue of porkers
+        BlockingQueue<Porker> porkers = new ArrayBlockingQueue(cfg.numThreads, true)
         (0..<cfg.numThreads).each { threadNo ->
-            executor.execute() {
-                def client = clientFactory.createClient()
-                Porker porker = new Porker(client, cfg, logger)
+            HashClient client = clientFactory.createClient()
+            Porker porker = new Porker(client, cfg, logger)
+            porkers.put(porker)
+        }
 
-                cfg.threadIters.times {
+        cfg.threadIters.times {
+            executor.execute() {
+                Porker porker = porkers.take()
+                try {
                     porker.executeIter()
+                } finally {
+                    porkers.put(porker)
                 }
+                
             }
         }
         executor
@@ -121,7 +132,7 @@ class VPork {
         if (args.length < 1) {
             println "Syntax:  vpork <configFile> [nodesFile]"
             println ""
-            println "Example: vpork configs/memory/30-thread-pork.groovy configs/memory/nodes"
+            println "Example: vpork configs/memory/30-thread-pork.groovy"
             println ""
             println "Where config/memory/nodes is a flat file, each line containing a remote"
             println "node to test against"

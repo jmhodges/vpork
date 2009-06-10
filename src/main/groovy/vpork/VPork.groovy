@@ -62,6 +62,7 @@ class VPork {
         logger.start()
 
         ExecutorService executor = startPorkerThreads()
+        
         executor.shutdown()
         executor.awaitTermination(60 * 60 * 2, TimeUnit.SECONDS) // 2 hours
         shuttingDown.set(true)
@@ -71,7 +72,7 @@ class VPork {
 
     private void startLoggerThread(AtomicBoolean shuttingDown) {
         Thread.startDaemon {
-            double expectedWrites = cfg.numThreads * cfg.threadIters * cfg.writeOdds * cfg.dataSize
+            double expectedWrites = cfg.threadIters * cfg.writeOdds * cfg.dataSize
             while(!shuttingDown.get()) {
                 def percDone = (double) logger.bytesWritten.get() * 100.0 / expectedWrites
                 double readGB = (double) logger.bytesRead / (1024 * 1024 * 1024)

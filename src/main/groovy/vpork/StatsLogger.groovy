@@ -49,7 +49,7 @@ public class StatsLogger {
         progressLog = new FileWriter(new File(logDir, "progress.log"))
         
         logAndPrint "NumThreads      : ${cfg.numThreads}"
-        logAndPrint "Iters / Thread  : ${cfg.threadIters}"
+        logAndPrint "Iterations      : ${cfg.threadIters}"
         logAndPrint "ReadOdds        : ${cfg.readOdds}"
         logAndPrint "WriteOdds       : ${cfg.writeOdds}"
         logAndPrint "RewriteOdds     : ${cfg.rewriteOdds}"
@@ -106,8 +106,8 @@ public class StatsLogger {
         logAndPrint sprintf("  Write Latency (%%99):  %.2f ms", writeTimes.getPercentile(99))
         logAndPrint sprintf("  Write Latency stdDev: %.2f", writeTimes.getStandardDeviation())
         logAndPrint sprintf("  Bytes Written:        %.2f MB", bytesWritten / (1024 * 1024))
-        logAndPrint sprintf("  Thread w/Throughput:  %.2f KB / sec", (double)(bytesWritten / 1024.0) * 100.0 / (double)timeWriting.get() / (double)cfg.numThreads)
-        logAndPrint sprintf("  Total w/Throughput:   %.2f KB / sec", (double)(bytesWritten / 1024.0) * 100.0 / (double)elapsed)
+        logAndPrint sprintf("  Thread w/Throughput:  %.2f KB / sec", (double)(bytesWritten / 1024.0) / (double)timeWriting.get())
+        logAndPrint sprintf("  Total w/Throughput:   %.2f KB / sec", (double)(bytesWritten / 1024.0) / (double)elapsed)
         logAndPrint ""
         logAndPrint sprintf("Reads:")
         logAndPrint sprintf("  Num Read:             ${numReads}")
@@ -118,8 +118,8 @@ public class StatsLogger {
         logAndPrint sprintf("  Read Latency stdDev:  %.2f", readTimes.getStandardDeviation())
         logAndPrint sprintf("  Read Not Found:       %s (%%%.2f)", readsNotFound, (double)readsNotFound * 100.0 / (double)numReads)
         logAndPrint sprintf("  Bytes Read:           %.2f MB", bytesRead / (1024 * 1024))
-        logAndPrint sprintf("  Thread r/Throughput:  %.2f KB / sec", (double)(bytesRead / 1024.0) * 100.0 / (double)timeReading.get() / (double)cfg.numThreads)
-        logAndPrint sprintf("  Total r/Throughput:   %.2f KB / sec", (double)(bytesRead / 1024.0) * 100.0 / (double) (elapsed / 1000))
+        logAndPrint sprintf("  Thread r/Throughput:  %.2f KB / sec", (double)(bytesRead / 1024.0) / (double)timeReading.get())
+        logAndPrint sprintf("  Total r/Throughput:   %.2f KB / sec", (double)(bytesRead / 1024.0) / (double) (elapsed / 1000))
     }
     
     private void logAndPrint(String s) {

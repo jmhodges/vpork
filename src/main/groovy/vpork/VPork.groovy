@@ -156,7 +156,7 @@ class VPork {
 
         BasicConfigurator.configure()
         LogManager.rootLogger.level = Level.INFO
-        LogManager.getLogger("voldemort").level = Level.DEBUG
+        LogManager.getLogger("voldemort").level = Level.INFO
 
         ConfigObject cfg = new ConfigSlurper().parse(new File(args[0]).toURL())
 

@@ -1,11 +1,11 @@
-storageType="cassandra"
+storageType="hbase"
 testName="30-thread-pork"
 
 /**
  * Configuration of the Voldemort ClientStore.
  */
 storeFactory {
-    storePort         = 9160
+    storePort         = 9090
     tableName         = "Table1"
     columnFamilyColumn         = "Standard1:column"
 }

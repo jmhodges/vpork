@@ -31,7 +31,6 @@ public class HbaseClientFactory implements HashClientFactory {
         Hbase.Client client = new Hbase.Client(protocol)
 
         transport.open()
-        adapter = new HbaseAdapter(client, cfg.storeFactory.tableName, cfg.storeFactory.columnFamilyColumn)
-        return adapter
+        return new HbaseAdapter(client, cfg.storeFactory.tableName, cfg.storeFactory.columnFamilyColumn)
     }
 }

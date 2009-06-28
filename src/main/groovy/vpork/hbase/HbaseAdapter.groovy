@@ -22,7 +22,7 @@ public class HbaseAdapter implements HashClient {
     
     byte[] get(String key) {
         try {
-            return table.get(tableName, key.getBytes(), columnFamilyColumn).value
+            return client.get(tableName, key.getBytes(), columnFamilyColumn).value
         } catch (NotFound e) {
             return null
         }
@@ -30,6 +30,8 @@ public class HbaseAdapter implements HashClient {
 
     void put(String key, byte[] value) {
         Mutation m = new Mutation(false, columnFamilyColumn, value)
-        client.mutateRow(tableName, key.toBytes(), m)
+        ArrayList<Mutation> l = new ArrayList<Mutation>()
+        l.add(m)
+        client.mutateRow(tableName, key.getBytes(), l)
     }
 }

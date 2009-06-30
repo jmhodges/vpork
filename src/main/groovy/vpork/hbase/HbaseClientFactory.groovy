@@ -9,7 +9,7 @@ import vpork.NodesUtil;
  * Handles setting up a client connection to HBase
  * using native HTable called from groovy.
  */
-public class HbaseGroovyClientFactory implements HashClientFactory {
+public class HbaseClientFactory implements HashClientFactory {
     private ConfigObject cfg
 
     void setup(ConfigObject cfg, StatsLogger logger, List<String> factoryArgs) {
@@ -21,6 +21,6 @@ public class HbaseGroovyClientFactory implements HashClientFactory {
         // Clients go to the ZooKeeper Quorum designated
         // in zoo.cfg which is read off the CLASSPATH when
         // ever client tries to connect.
-        return new HbaseGroovyAdapter(cfg.storeFactory.tableName, cfg.storeFactory.columnFamilyColumn)
+        return new HBaseAdapter(cfg.storeFactory.tableName, cfg.storeFactory.columnFamilyColumn)
     }
 }

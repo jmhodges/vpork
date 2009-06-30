@@ -8,7 +8,7 @@ import org.apache.hadoop.hbase.util.Bytes
  * Adapts the Hbase interface to the one used by VPork
  * Instantiates an HTable instance.
  */
-public class HbaseGroovyAdapter implements HashClient {
+public class HbaseAdapter implements HashClient {
     private HTable table
     private byte[] family
     private byte[] qualifier

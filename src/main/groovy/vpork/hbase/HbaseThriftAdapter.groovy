@@ -7,14 +7,15 @@ import vpork.HashClient
 
 /**
  * Adapts the Hbase interface to the one used by VPork
+ * Goes via HBase Thrift interface.
  */
 
-public class HbaseAdapter implements HashClient {
+public class HbaseThriftAdapter implements HashClient {
     private Hbase.Client client
     private byte[] tableName
     private byte[] columnFamilyColumn
     
-    public HbaseAdapter(Hbase.Client client, String tableName, String columnFamilyColumn) {
+    public HbaseThriftAdapter(Hbase.Client client, String tableName, String columnFamilyColumn) {
         this.client = client
         this.tableName = tableName.getBytes()
         this.columnFamilyColumn = columnFamilyColumn.getBytes()

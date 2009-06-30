@@ -13,8 +13,9 @@ import vpork.NodesUtil;
 
 /**
  * Handles setting up a client connection to Hbase
+ * Uses HBase Thrift Interface
  */
-public class HbaseClientFactory implements HashClientFactory {
+public class HbaseThriftClientFactory implements HashClientFactory {
     private ConfigObject cfg
     private List<String> nodes
     private Random r = new Random()

@@ -20,7 +20,7 @@ package vpork
 import vpork.voldemort.VoldemortClientFactory
 import vpork.cassandra.CassandraClientFactory
 import vpork.memory.MemoryClientFactory
-import vpork.hbase.HbaseClientFactory
+import vpork.hbase.HbaseThriftClientFactory
 
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.ExecutorService
@@ -139,8 +139,8 @@ class VPork {
             return new VoldemortClientFactory()
         } else if(storageType == "memory") {
             return new MemoryClientFactory()
-        } else if(storageType == "hbase") {
-            return new HbaseClientFactory()
+        } else if(storageType == "hbase-thrift") {
+            return new HbaseThriftClientFactory()
         } else {
             return null
         }

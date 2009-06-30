@@ -32,6 +32,6 @@ public class HbaseThriftClientFactory implements HashClientFactory {
         Hbase.Client client = new Hbase.Client(protocol)
 
         transport.open()
-        return new HbaseAdapter(client, cfg.storeFactory.tableName, cfg.storeFactory.columnFamilyColumn)
+        return new HbaseThriftAdapter(client, cfg.storeFactory.tableName, cfg.storeFactory.columnFamilyColumn)
     }
 }
